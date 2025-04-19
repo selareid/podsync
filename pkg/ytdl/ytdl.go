@@ -230,12 +230,12 @@ func buildArgs(feedConfig *feed.Config, episode *model.Episode, outputFilePath s
 	if feedConfig.Format == model.FormatVideo {
 		// Video, mp4, high by default
 
-		format := "bestvideo[ext=mp4][vcodec^=avc1]+bestaudio[ext=m4a]/best[ext=mp4][vcodec^=avc1]/best[ext=mp4]/best"
+		format := "bestvideo[ext=mp4][vcodec^=avc1]+bestaudio/best[ext=mp4][vcodec^=avc1]/best[ext=mp4]/best"
 
 		if feedConfig.Quality == model.QualityLow {
-			format = "worstvideo[ext=mp4][vcodec^=avc1]+worstaudio[ext=m4a]/worst[ext=mp4][vcodec^=avc1]/worst[ext=mp4]/worst"
+			format = "worstvideo[ext=mp4][vcodec^=avc1]+worstaudio/worst[ext=mp4][vcodec^=avc1]/worst[ext=mp4]/worst"
 		} else if feedConfig.Quality == model.QualityHigh && feedConfig.MaxHeight > 0 {
-			format = fmt.Sprintf("bestvideo[height<=%d][ext=mp4][vcodec^=avc1]+bestaudio[ext=m4a]/best[height<=%d][ext=mp4][vcodec^=avc1]/best[ext=mp4]/best", feedConfig.MaxHeight, feedConfig.MaxHeight)
+			format = fmt.Sprintf("bestvideo[height<=%d][ext=mp4][vcodec^=avc1]+bestaudio/best[height<=%d][ext=mp4][vcodec^=avc1]/best[ext=mp4]/best", feedConfig.MaxHeight, feedConfig.MaxHeight)
 		}
 
 		args = append(args, "--format", format)
@@ -248,7 +248,7 @@ func buildArgs(feedConfig *feed.Config, episode *model.Episode, outputFilePath s
 
 		args = append(args, "--extract-audio", "--audio-format", "mp3", "--format", format)
 	} else {
-		args = append(args, "--audio-format", feedConfig.CustomFormat.Extension, "--format", feedConfig.CustomFormat.YouTubeDLFormat)
+		args = append(args, "--format", feedConfig.CustomFormat.YouTubeDLFormat)
 	}
 
 	// Insert additional per-feed youtube-dl arguments

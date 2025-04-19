@@ -56,6 +56,19 @@ func ParseURL(link string) (model.Info, error) {
 		return info, nil
 	}
 
+	if strings.HasSuffix(parsed.Host, "nebula.tv") {
+		kind, id, err := parseNebulaURL(parsed)
+		if err != nil {
+			return model.Info{}, err
+		}
+
+		info.Provider = model.ProviderNebula
+		info.LinkType = kind
+		info.ItemID = id
+
+		return info, nil
+	}
+
 	return model.Info{}, errors.New("unsupported URL host")
 }
 
@@ -185,4 +198,14 @@ func parseSoundcloudURL(parsed *url.URL) (model.Type, string, error) {
 	id := parts[3]
 
 	return kind, id, nil
+}
+
+func parseNebulaURL(parsed *url.URL) (model.Type, string, error) {
+	parts := strings.Split(parsed.EscapedPath(), "/")
+
+	if len(parts) != 2 {
+		return "", "", errors.New("invalid nebula link path")
+	}
+
+	return model.TypeChannel, parts[1], nil
 }
