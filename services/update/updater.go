@@ -239,6 +239,8 @@ func (u *Manager) downloadEpisodes(ctx context.Context, feedConfig *feed.Config)
 			if err == ytdl.ErrTooManyRequests {
 				logger.Warn("server responded with a 'Too Many Requests' error")
 				break
+			} else {
+				logger.Warn(err)
 			}
 
 			if err := u.db.UpdateEpisode(feedID, episode.ID, func(episode *model.Episode) error {

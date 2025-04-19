@@ -251,6 +251,8 @@ func buildArgs(feedConfig *feed.Config, episode *model.Episode, outputFilePath s
 		args = append(args, "--format", feedConfig.CustomFormat.YouTubeDLFormat)
 	}
 
+	args = append(args, "-S", "ext:mp4:m4a")
+
 	// Insert additional per-feed youtube-dl arguments
 	args = append(args, feedConfig.YouTubeDLArgs...)
 
