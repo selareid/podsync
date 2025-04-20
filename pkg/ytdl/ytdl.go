@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -154,6 +155,50 @@ func (dl *YoutubeDl) Update(ctx context.Context) error {
 
 	log.Info(output)
 	return nil
+}
+
+func (dl *YoutubeDl) GetDuration(ctx context.Context, url string, extra_args ...string) (duration int64, err error) {
+	var args []string
+
+	// extra args i.e. for authentication
+	args = append(args, extra_args...)
+
+	args = append(args, "--get-duration", url)
+
+	output, err := dl.exec(ctx, args...)
+
+	if err != nil {
+		return 0, err
+	}
+
+	parts := strings.Split(strings.Split(output, "\n")[0], ":")
+
+	// seconds
+	num, err := strconv.Atoi(parts[len(parts)-1])
+	if err != nil {
+		return 0, err
+	}
+	duration += int64(num)
+
+	// minutes
+	if len(parts) > 1 {
+		num, err = strconv.Atoi(parts[len(parts)-2])
+		if err != nil {
+			return 0, err
+		}
+		duration += int64(num) * 60
+	}
+
+	// hours
+	if len(parts) > 2 {
+		num, err = strconv.Atoi(parts[len(parts)-3])
+		if err != nil {
+			return 0, err
+		}
+		duration += int64(num) * 60 * 60
+	}
+
+	return duration, nil
 }
 
 func (dl *YoutubeDl) Download(ctx context.Context, feedConfig *feed.Config, episode *model.Episode) (r io.ReadCloser, err error) {

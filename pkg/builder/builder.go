@@ -13,7 +13,7 @@ type Builder interface {
 	Build(ctx context.Context, cfg *feed.Config) (*model.Feed, error)
 }
 
-func New(ctx context.Context, provider model.Provider, key string) (Builder, error) {
+func New(ctx context.Context, provider model.Provider, key string, durationGetter fnGetDuration) (Builder, error) {
 	switch provider {
 	case model.ProviderYoutube:
 		return NewYouTubeBuilder(key)
@@ -22,7 +22,7 @@ func New(ctx context.Context, provider model.Provider, key string) (Builder, err
 	case model.ProviderSoundcloud:
 		return NewSoundcloudBuilder()
 	case model.ProviderNebula:
-		return newNebulaBuilder(key)
+		return newNebulaBuilder(key, durationGetter)
 	default:
 		return nil, errors.Errorf("unsupported provider %q", provider)
 	}

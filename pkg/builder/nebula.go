@@ -10,8 +10,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+type fnGetDuration func(ctx context.Context, url string, extra_args ...string) (duration int64, err error)
+
 type NebulaBuilder struct {
-	token string
+	token       string
+	getDuration fnGetDuration
 }
 
 func (neb *NebulaBuilder) Build(ctx context.Context, cfg *feed.Config) (*model.Feed, error) {
@@ -47,17 +50,23 @@ func (neb *NebulaBuilder) Build(ctx context.Context, cfg *feed.Config) (*model.F
 	// setup episodes and add to feed
 	added := 0
 	for _, item := range rssFeed.Items {
-		_feed.Episodes = append(_feed.Episodes, &model.Episode{
+		newEpisode := &model.Episode{
 			ID:          item.GUID,
 			Title:       item.Title,
 			Description: item.Description,
 			VideoURL:    item.Link,
 			PubDate:     *item.PublishedParsed,
 			// Thumbnail: item.,
-			// Duration: item.length,
 			// Size: ,
 			Status: model.EpisodeNew,
-		})
+		}
+
+		dur, err := neb.getDuration(ctx, item.Link, "--add-headers", "Authorization: Token "+neb.token)
+		if err != nil {
+			newEpisode.Duration = dur
+		}
+
+		_feed.Episodes = append(_feed.Episodes, newEpisode)
 
 		added++
 
@@ -69,10 +78,10 @@ func (neb *NebulaBuilder) Build(ctx context.Context, cfg *feed.Config) (*model.F
 	return _feed, nil
 }
 
-func newNebulaBuilder(key string) (*NebulaBuilder, error) {
+func newNebulaBuilder(key string, durationGetter fnGetDuration) (*NebulaBuilder, error) {
 	if key == "" {
 		return nil, errors.New("invalid key given for Nebula")
 	}
 
-	return &NebulaBuilder{token: key}, nil
+	return &NebulaBuilder{token: key, getDuration: durationGetter}, nil
 }

@@ -23,6 +23,7 @@ import (
 
 type Downloader interface {
 	Download(ctx context.Context, feedConfig *feed.Config, episode *model.Episode) (io.ReadCloser, error)
+	GetDuration(ctx context.Context, url string, extra_args ...string) (duration int64, err error)
 }
 
 type TokenList []string
@@ -101,7 +102,7 @@ func (u *Manager) updateFeed(ctx context.Context, feedConfig *feed.Config) error
 	}
 
 	// Create an updater for this feed type
-	provider, err := builder.New(ctx, info.Provider, keyProvider.Get())
+	provider, err := builder.New(ctx, info.Provider, keyProvider.Get(), u.downloader.GetDuration)
 	if err != nil {
 		return err
 	}
