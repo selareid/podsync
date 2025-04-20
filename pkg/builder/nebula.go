@@ -7,9 +7,11 @@ import (
 	"github.com/mmcdole/gofeed"
 	"github.com/mxpv/podsync/pkg/feed"
 	"github.com/mxpv/podsync/pkg/model"
+	"github.com/pkg/errors"
 )
 
 type NebulaBuilder struct {
+	token string
 }
 
 func (neb *NebulaBuilder) Build(ctx context.Context, cfg *feed.Config) (*model.Feed, error) {
@@ -17,6 +19,9 @@ func (neb *NebulaBuilder) Build(ctx context.Context, cfg *feed.Config) (*model.F
 	if err != nil {
 		return nil, err
 	}
+
+	// add authorisation token to yt-dlp arguments
+	cfg.YouTubeDLArgs = append(cfg.YouTubeDLArgs, "--add-headers", "Authorization: Token "+neb.token)
 
 	fp := gofeed.Parser{}
 	rssFeed, err := fp.ParseURL("https://rss.nebula.app/video/channels/" + info.ItemID + ".rss")
@@ -64,6 +69,10 @@ func (neb *NebulaBuilder) Build(ctx context.Context, cfg *feed.Config) (*model.F
 	return _feed, nil
 }
 
-func newNebulaBuilder() (*NebulaBuilder, error) {
-	return &NebulaBuilder{}, nil
+func newNebulaBuilder(key string) (*NebulaBuilder, error) {
+	if key == "" {
+		return nil, errors.New("invalid key given for Nebula")
+	}
+
+	return &NebulaBuilder{token: key}, nil
 }

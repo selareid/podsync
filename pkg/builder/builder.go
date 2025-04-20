@@ -22,7 +22,7 @@ func New(ctx context.Context, provider model.Provider, key string) (Builder, err
 	case model.ProviderSoundcloud:
 		return NewSoundcloudBuilder()
 	case model.ProviderNebula:
-		return newNebulaBuilder()
+		return newNebulaBuilder(key)
 	default:
 		return nil, errors.Errorf("unsupported provider %q", provider)
 	}
