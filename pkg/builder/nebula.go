@@ -2,6 +2,7 @@ package builder
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/mmcdole/gofeed"
@@ -15,6 +16,19 @@ type fnGetDuration func(ctx context.Context, url string, extra_args ...string) (
 type NebulaBuilder struct {
 	token       string
 	getDuration fnGetDuration
+}
+
+func splitThumbnail(desc string) string {
+	a := strings.Split(desc, "<img src=")
+
+	if len(a) < 2 {
+		return ""
+	}
+
+	b := strings.Split(a[1], ">")
+	c := strings.Split(b[0], "?format")
+
+	return c[0]
 }
 
 func (neb *NebulaBuilder) Build(ctx context.Context, cfg *feed.Config) (*model.Feed, error) {
@@ -56,7 +70,6 @@ func (neb *NebulaBuilder) Build(ctx context.Context, cfg *feed.Config) (*model.F
 			Description: item.Description,
 			VideoURL:    item.Link,
 			PubDate:     *item.PublishedParsed,
-			// Thumbnail: item.,
 			// Size: ,
 			Status: model.EpisodeNew,
 		}
@@ -64,6 +77,11 @@ func (neb *NebulaBuilder) Build(ctx context.Context, cfg *feed.Config) (*model.F
 		dur, err := neb.getDuration(ctx, item.Link, "--add-headers", "Authorization: Token "+neb.token)
 		if err != nil {
 			newEpisode.Duration = dur
+		}
+
+		thumbnailURL := splitThumbnail(item.Description)
+		if thumbnailURL != "" {
+			newEpisode.Thumbnail = thumbnailURL
 		}
 
 		_feed.Episodes = append(_feed.Episodes, newEpisode)
