@@ -2,6 +2,7 @@ package builder
 
 import (
 	"context"
+	"regexp"
 	"strings"
 	"time"
 
@@ -82,6 +83,9 @@ func (neb *NebulaBuilder) Build(ctx context.Context, cfg *feed.Config) (*model.F
 		thumbnailURL := splitThumbnail(item.Description)
 		if thumbnailURL != "" {
 			newEpisode.Thumbnail = thumbnailURL
+			pattern := `<img src=` + regexp.QuoteMeta(thumbnailURL) + `\?[^>]+>`
+			re := regexp.MustCompile(pattern)
+			newEpisode.Description = re.ReplaceAllString(newEpisode.Description, "")
 		}
 
 		_feed.Episodes = append(_feed.Episodes, newEpisode)
