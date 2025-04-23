@@ -66,7 +66,7 @@ func Build(_ctx context.Context, feed *model.Feed, cfg *Config, hostname string)
 	p.IAuthor = author
 	p.AddSummary(description)
 
-	if feed.PrivateFeed {
+	if feed.PrivateFeed == nil || *feed.PrivateFeed {
 		p.IBlock = "yes"
 	}
 

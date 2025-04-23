@@ -41,7 +41,7 @@ type Config struct {
 	// Included in OPML file
 	OPML bool `toml:"opml"`
 	// Private feed (not indexed by podcast aggregators)
-	PrivateFeed bool `toml:"private_feed"`
+	PrivateFeed *bool `toml:"private_feed"`
 	// Playlist sort
 	PlaylistSort model.Sorting `toml:"playlist_sort"`
 }
