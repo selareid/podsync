@@ -2,6 +2,9 @@ package builder
 
 import (
 	"context"
+	"encoding/json"
+	"io"
+	"net/http"
 	"regexp"
 	"strings"
 	"time"
@@ -32,6 +35,38 @@ func splitThumbnail(desc string) string {
 	return c[0]
 }
 
+func getChannelAvatarURL(channelName string) (string, error) {
+	// Make the GET request
+	resp, err := http.Get("https://content.api.nebula.app/content/" + channelName)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	// Define a struct to unmarshal the JSON into
+	var data struct {
+		Images struct {
+			Avatar struct {
+				Src string `json:"src"`
+			} `json:"avatar"`
+		} `json:"images"`
+	}
+
+	// Parse the JSON
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return "", err
+	}
+
+	return data.Images.Avatar.Src, nil
+}
+
 func (neb *NebulaBuilder) Build(ctx context.Context, cfg *feed.Config) (*model.Feed, error) {
 	info, err := ParseURL(cfg.URL)
 	if err != nil {
@@ -60,6 +95,11 @@ func (neb *NebulaBuilder) Build(ctx context.Context, cfg *feed.Config) (*model.F
 		ItemURL:     rssFeed.Link,
 		Description: rssFeed.Description,
 		PubDate:     *rssFeed.UpdatedParsed,
+	}
+
+	avatarSrc, err := getChannelAvatarURL(info.ItemID)
+	if err == nil {
+		_feed.CoverArt = avatarSrc
 	}
 
 	// setup episodes and add to feed
