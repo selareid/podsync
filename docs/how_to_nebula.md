@@ -11,6 +11,8 @@ Setup your config.toml as below.
 
 For each feed, you must use url format `https://nebula.tv/<channel name>`. Only channels are supported at this time.
 
+Depending on the video length and chosen quality, videos may take a long time to download. If they exceed the timeout time, they fail. To avoid this, use a high download timeout value (65 minutes seems to be good for 1080p jetlag).
+
 An example config.toml for Nebula:
 ```
 [server]
@@ -20,6 +22,9 @@ hostname = "http://localhost:8080"
 [storage]
   [storage.local]
   data_dir = "./app/data/"
+
+[downloader]
+  timeout = 65
 
 [tokens]
 nebula = "<your token>"
